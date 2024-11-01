@@ -1,7 +1,7 @@
 import { EnvVarWarning } from "@/components/env-var-warning";
 import HeaderAuth from "@/components/header-auth";
 import Link from "next/link";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+import { hasEnvVars } from "@/lib/supabase/check-env-vars";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function LandingLayout({
