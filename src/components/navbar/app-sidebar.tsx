@@ -158,7 +158,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, userData, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Please sign in</div>;
 
