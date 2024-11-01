@@ -27,7 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOutAction } from "@/app/actions";
-import { UserData } from "@/lib/types";
+import { UserData } from "@/types";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/context/AuthContext";
 
