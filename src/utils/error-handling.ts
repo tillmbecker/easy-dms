@@ -1,6 +1,6 @@
 // utils/error-handling.ts
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/hooks/use-toast";
 
 interface SupabaseError {
   code: string;

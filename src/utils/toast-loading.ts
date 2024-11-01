@@ -1,4 +1,4 @@
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/hooks/use-toast";
 
 /**
  * Displays a loading toast with the given message that won't auto-dismiss.

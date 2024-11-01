@@ -10,7 +10,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,15 +26,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { signOutAction } from "@/app/actions";
-import { UserData } from "@/types";
-import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/context/AuthContext";
+import { Skeleton } from "../ui/skeleton";
 
-export function NavUser({ user }: { user: User }) {
+export function NavUser() {
   const { isMobile } = useSidebar();
-  const { signOut } = useAuth();
-
+  const { user, loading, signOut } = useAuth();
+  if (loading) return <LoadingState />;
+  if (!user) return null;
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -53,9 +52,8 @@ export function NavUser({ user }: { user: User }) {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Account</span>
-                <span className="truncate text-xs">Manage your account</span>
                 {/* <span className="truncate font-semibold">{user.name}</span> */}
-                {/* <span className="truncate text-xs">{user.email}</span> */}
+                <span className="truncate text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -75,8 +73,8 @@ export function NavUser({ user }: { user: User }) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.email}</span>
-                  {/* <span className="truncate text-xs">{user.email}</span> */}
+                  <span className="truncate font-semibold">Account</span>
+                  <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -109,6 +107,27 @@ export function NavUser({ user }: { user: User }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+function LoadingState() {
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton size="lg">
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarFallback className="rounded-lg">
+              {/* <LoadingSpinner /> */}
+              <Skeleton className="h-8 w-8" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight gap-1">
+            <Skeleton className="h-3 w-[100px]" />
+            <Skeleton className="h-3 w-[150px]" />
+          </div>
+        </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
   );
