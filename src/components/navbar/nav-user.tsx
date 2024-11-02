@@ -26,14 +26,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "../ui/skeleton";
+import { useUser, useSignOutUser } from "@/hooks/useUser";
+import LoadingSpinner from "../loading/loading-spinner";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
-  const { user, loading, signOut } = useAuth();
-  if (loading) return <LoadingState />;
+  const { data: user, isLoading } = useUser();
+  const signOut = useSignOutUser();
+  if (isLoading) return <LoadingState />;
   if (!user) return null;
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -101,7 +104,10 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOut}>
+            <DropdownMenuItem
+              onClick={() => signOut.mutate()}
+              disabled={signOut.isPending}
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

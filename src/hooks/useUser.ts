@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./useQueryKeys";
 import { supabase } from "@/lib/supabase/client";
 import { handleError } from "@/utils/error-handling";
+import { signOutAction } from "@/app/actions";
+import { useRouter } from "next/navigation";
 
 export function useUser() {
   return useQuery({
@@ -19,5 +21,20 @@ export function useUser() {
         throw handleError(error);
       }
     },
+  });
+}
+export function useSignOutUser() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await signOutAction();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.resetQueries({ queryKey: queryKeys.user.profile }); // reset user query to remove data from cache
+      router.push("/sign-in");
+    },
+    onError: handleError,
   });
 }
