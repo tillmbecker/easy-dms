@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "../ui/skeleton";
 import { useUser, useSignOutUser } from "@/hooks/useUser";
-import LoadingSpinner from "../loading/loading-spinner";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
