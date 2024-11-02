@@ -25,7 +25,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/context/AuthContext";
 
 // This is sample data.
 const data = {
