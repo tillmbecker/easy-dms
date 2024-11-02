@@ -42,6 +42,7 @@ export function handleError(error: unknown) {
         });
         break;
       default:
+        if (supaError.message === "Auth session missing!") break; // Prevent showing toast when user logged out
         toast({
           variant: "destructive",
           title: "Error",
