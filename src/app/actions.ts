@@ -49,7 +49,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect(process.env.AFTER_SIGN_IN_URL || "/");
+  return redirect(process.env.NEXT_PUBLIC_AFTER_SIGN_IN_URL || "/");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
