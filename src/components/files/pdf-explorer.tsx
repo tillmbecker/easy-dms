@@ -31,15 +31,8 @@ import {
 import { useFiles, useFileUrl } from "@/hooks/useFiles";
 import { useMemo, useState } from "react";
 import { formatFileSize } from "@/utils/formatFileSize";
-
-interface PdfFile {
-  name: string;
-  id: number;
-  metadata: {
-    size: number;
-  };
-  last_accessed_at: string;
-}
+import { PdfFile } from "@/types/file";
+import PdfViewer from "./pdf-viewer";
 
 type SortKey = "name" | "size" | "lastModified" | "client";
 
@@ -104,12 +97,12 @@ export default function PdfExplorer(): JSX.Element {
     }
   };
 
-  const handleDelete = (id: number): void => {
+  const handleDelete = (id: string): void => {
     console.log(`Deleting file with id: ${id}`);
     console.log("Implement delete functionality here");
   };
 
-  const handleRename = (id: number): void => {
+  const handleRename = (id: string): void => {
     const fileToRename = files.data.find((file: PdfFile) => file.id === id);
     if (fileToRename) {
       setRenamingFile(fileToRename);
@@ -235,36 +228,11 @@ export default function PdfExplorer(): JSX.Element {
       </div>
 
       {selectedFile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{selectedFile.name}</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSelectedFile(null)}
-              >
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-            <div className="p-4">
-              <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center mb-4">
-                {fileUrl.isLoading && <p>Loading...</p>}
-                {fileUrl.isError && <p>Error loading file</p>}
-                {fileUrl.isSuccess && fileUrl.data && (
-                  <iframe
-                    className="w-full h-full"
-                    src={fileUrl.data.signedUrl ?? ""}
-                  />
-                )}
-              </div>
-              <p className="text-sm text-gray-600">
-                Size: {formatFileSize(selectedFile.metadata.size, 1, false)} •
-                Last modified: {selectedFile.last_accessed_at}
-              </p>
-            </div>
-          </div>
-        </div>
+        <PdfViewer
+          file={selectedFile}
+          open={selectedFile !== null}
+          onOpenChange={(open) => !open && setSelectedFile(null)}
+        />
       )}
 
       {renamingFile && (
