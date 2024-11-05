@@ -5,6 +5,10 @@ export const queryKeys = {
     notifications: (userId: string) =>
       ["user", "notifications", userId] as const,
   },
+  files: {
+    all: ["files"] as const,
+    id: (fileId: string) => ["files", "id", fileId] as const,
+  },
   posts: {
     all: ["posts"] as const,
     detail: (id: string) => ["posts", id] as const,

@@ -1,7 +1,9 @@
+import PdfExplorer from "@/components/files/pdf-explorer";
+
 export default function DocumentsPage() {
   return (
     <div>
-      <h1>Documents</h1>
+      <PdfExplorer />
     </div>
   );
 }
