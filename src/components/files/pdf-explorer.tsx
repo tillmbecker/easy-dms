@@ -1,115 +1,293 @@
 "use client";
 
 import * as React from "react";
-import { File } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import {
+  File,
+  X,
+  ChevronUp,
+  ChevronDown,
+  MoreVertical,
+  Download,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { useFiles, useFileUrl } from "@/hooks/useFiles";
+import { useMemo, useState } from "react";
+import { formatFileSize } from "@/utils/formatFileSize";
 
-// Simulated PDF files data
-const pdfFiles = [
-  {
-    id: 1,
-    name: "Document1.pdf",
-    size: "2.5 MB",
-    last_accessed_at: "2023-11-01",
-  },
-  {
-    id: 2,
-    name: "Report2023.pdf",
-    size: "5.1 MB",
-    last_accessed_at: "2023-10-28",
-  },
-  {
-    id: 3,
-    name: "Presentation.pdf",
-    size: "3.7 MB",
-    last_accessed_at: "2023-11-03",
-  },
-  {
-    id: 4,
-    name: "UserManual.pdf",
-    size: "8.2 MB",
-    last_accessed_at: "2023-09-15",
-  },
-  {
-    id: 5,
-    name: "FinancialStatement.pdf",
-    size: "1.8 MB",
-    last_accessed_at: "2023-11-05",
-  },
-];
-
-type PdfFile = {
+interface PdfFile {
   name: string;
   id: number;
-  metadata: { size: number };
+  metadata: {
+    size: number;
+  };
   last_accessed_at: string;
+}
+
+type SortKey = "name" | "size" | "lastModified" | "client";
+
+// Simulated client list
+const initialClients: string[] = [
+  "Client A",
+  "Client B",
+  "Client C",
+  "Client D",
+  "Client E",
+];
+
+interface SortIconProps {
+  columnKey: SortKey;
+  currentSortKey: SortKey;
+  currentSortOrder: "asc" | "desc";
+}
+
+const SortIcon: React.FC<SortIconProps> = ({
+  columnKey,
+  currentSortKey,
+  currentSortOrder,
+}) => {
+  if (columnKey !== currentSortKey) return null;
+  return currentSortOrder === "asc" ? (
+    <ChevronUp className="ml-2 h-4 w-4" />
+  ) : (
+    <ChevronDown className="ml-2 h-4 w-4" />
+  );
 };
 
-export default function PdfExplorer() {
-  const [selectedFile, setSelectedFile] = React.useState<PdfFile | null>(null);
-
+export default function PdfExplorer(): JSX.Element {
   const files = useFiles();
+  const [clients, setClients] = useState<string[]>(initialClients);
+  const [selectedFile, setSelectedFile] = useState<PdfFile | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [renamingFile, setRenamingFile] = useState<PdfFile | null>(null);
+  const [newFileName, setNewFileName] = useState<string>("");
   const fileUrl = useFileUrl(selectedFile?.name ?? "");
-  console.log(files.data);
-  console.log("fileURL", fileUrl.data);
+
+  const sortedFiles = useMemo(() => {
+    if (!files.data) return [];
+    return [...files.data].sort((a, b) => {
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
+
+      if (!aValue || !bValue) return 0;
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [files.data, sortKey, sortOrder]);
+
+  const handleSort = (key: SortKey): void => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleDelete = (id: number): void => {
+    console.log(`Deleting file with id: ${id}`);
+    console.log("Implement delete functionality here");
+  };
+
+  const handleRename = (id: number): void => {
+    const fileToRename = files.data.find((file: PdfFile) => file.id === id);
+    if (fileToRename) {
+      setRenamingFile(fileToRename);
+      setNewFileName(fileToRename.name);
+    }
+  };
+
+  const confirmRename = (): void => {
+    if (newFileName.trim() !== "" && renamingFile) {
+      files.data.map((file: PdfFile) =>
+        file.id === renamingFile.id
+          ? { ...file, name: newFileName.trim() }
+          : file
+      );
+      setRenamingFile(null);
+      setNewFileName("");
+    }
+  };
+
+  const handleDownload = (file: PdfFile): void => {
+    console.log(`Downloading file: ${file.name}`);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* File Explorer */}
-      <div className="w-1/3 bg-white shadow-md">
-        <h2 className="p-4 text-lg font-semibold">PDF Files</h2>
-        <Separator />
-        <ScrollArea className="h-[calc(100vh-60px)]">
-          {!files.isLoading &&
-            files.data.map((file: PdfFile) => (
-              <div
-                key={file.id}
-                className={`flex items-center p-4 hover:bg-gray-100 cursor-pointer ${
-                  selectedFile?.id === file.id ? "bg-blue-100" : ""
-                }`}
-                onClick={() => {
-                  setSelectedFile(file);
-                }}
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">PDF File Explorer</h1>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead
+                className="w-[30%] cursor-pointer"
+                onClick={() => handleSort("name")}
               >
-                <File className="mr-2 h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="font-medium">{file.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {file.metadata.size / 1000} KB • Last accessed:{" "}
-                    {file.last_accessed_at}
-                  </p>
+                <div className="flex items-center">
+                  File Name
+                  <SortIcon
+                    columnKey="name"
+                    currentSortKey={sortKey}
+                    currentSortOrder={sortOrder}
+                  />
                 </div>
-              </div>
+              </TableHead>
+              <TableHead
+                className="w-[15%] cursor-pointer"
+                onClick={() => handleSort("size")}
+              >
+                <div className="flex items-center">
+                  Size
+                  <SortIcon
+                    columnKey="size"
+                    currentSortKey={sortKey}
+                    currentSortOrder={sortOrder}
+                  />
+                </div>
+              </TableHead>
+              <TableHead
+                className="w-[20%] cursor-pointer"
+                onClick={() => handleSort("lastModified")}
+              >
+                <div className="flex items-center">
+                  Last Modified
+                  <SortIcon
+                    columnKey="lastModified"
+                    currentSortKey={sortKey}
+                    currentSortOrder={sortOrder}
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="w-[15%]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedFiles.map((file: PdfFile) => (
+              <TableRow key={file.id} className="hover:bg-gray-100">
+                <TableCell
+                  className="font-medium cursor-pointer"
+                  onClick={() => setSelectedFile(file)}
+                >
+                  <div className="flex items-center">
+                    <File className="mr-2 h-5 w-5 text-blue-500" />
+                    {file.name}
+                  </div>
+                </TableCell>
+                <TableCell
+                  className="cursor-pointer"
+                  onClick={() => setSelectedFile(file)}
+                >
+                  {formatFileSize(file.metadata.size, 1, false)}
+                </TableCell>
+                <TableCell
+                  className="cursor-pointer"
+                  onClick={() => setSelectedFile(file)}
+                >
+                  {file.last_accessed_at}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDownload(file)}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRename(file.id)}>
+                        Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(file.id)}>
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
             ))}
-        </ScrollArea>
+          </TableBody>
+        </Table>
       </div>
 
-      {/* PDF Preview */}
-      <div className="flex-1 p-6">
-        {selectedFile ? (
-          <div>
-            <h2 className="text-2xl font-bold mb-4">{selectedFile.name}</h2>
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              {/* Placeholder for PDF preview */}
-              <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center">
-                <iframe
-                  src={fileUrl.data?.signedUrl ?? ""}
-                  className="w-full h-full"
-                ></iframe>
+      {selectedFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-semibold">{selectedFile.name}</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedFile(null)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+            <div className="p-4">
+              <div className="aspect-[3/4] bg-gray-200 flex items-center justify-center mb-4">
+                {fileUrl.isLoading && <p>Loading...</p>}
+                {fileUrl.isError && <p>Error loading file</p>}
+                {fileUrl.isSuccess && fileUrl.data && (
+                  <iframe
+                    className="w-full h-full"
+                    src={fileUrl.data.signedUrl ?? ""}
+                  />
+                )}
               </div>
-              <p className="mt-4 text-sm text-gray-600">
-                Size: {selectedFile.metadata.size} • Last modified:{" "}
-                {selectedFile.last_accessed_at}
+              <p className="text-sm text-gray-600">
+                Size: {formatFileSize(selectedFile.metadata.size, 1, false)} •
+                Last modified: {selectedFile.last_accessed_at}
               </p>
             </div>
           </div>
-        ) : (
-          <div className="h-full flex items-center justify-center text-gray-500">
-            Select a PDF file to preview
+        </div>
+      )}
+
+      {renamingFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-96">
+            <h2 className="text-xl font-semibold mb-4">Rename File</h2>
+            <Input
+              type="text"
+              value={newFileName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewFileName(e.target.value)
+              }
+              className="mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setRenamingFile(null)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmRename}>Rename</Button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
