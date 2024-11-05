@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "gen-types": "npx supabase gen types --lang=typescript --project-id \"jkgkxctwzravdjhkpepq\" --schema public > database.types.ts"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.0.0",
