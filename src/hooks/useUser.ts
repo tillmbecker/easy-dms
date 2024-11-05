@@ -33,7 +33,6 @@ export function useSignOutUser() {
       if (error) throw error;
     },
     onSuccess: () => {
-      showSuccess.logout();
       queryClient.invalidateQueries({ queryKey: queryKeys.user.profile }); // invalidate user query to remove data from cache
       router.push("/sign-in");
     },

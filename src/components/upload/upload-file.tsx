@@ -23,7 +23,7 @@ export default function UploadFile() {
         const formData = new FormData();
         formData.append("file", acceptedFiles[0]);
 
-        const response = await fetch("/api/analyze", {
+        const response = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });

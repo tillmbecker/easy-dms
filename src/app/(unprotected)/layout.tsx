@@ -1,8 +1,6 @@
-import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
 import Link from "next/link";
-import { hasEnvVars } from "@/lib/supabase/check-env-vars";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import HeaderAuth from "@/components/header-auth";
 
 export default function LandingLayout({
   children,
@@ -19,8 +17,7 @@ export default function LandingLayout({
             </div>
             <div className="flex items-center gap-2">
               <ThemeSwitcher />
-
-              {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+              <HeaderAuth />
             </div>
           </div>
         </nav>
