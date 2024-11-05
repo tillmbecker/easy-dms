@@ -2,7 +2,7 @@
 "use client";
 
 import { useFileUrl } from "@/hooks/useFiles";
-import { PdfFile } from "@/types/file";
+import { FileObject } from "@/types/file";
 import { formatFileSize } from "@/utils/formatFileSize";
 import {
   Dialog,
@@ -16,7 +16,7 @@ import { X } from "lucide-react";
 import React from "react";
 
 interface PdfViewerProps {
-  file: PdfFile;
+  file: FileObject;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }

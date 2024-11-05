@@ -28,13 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { useFiles } from "@/hooks/useFiles";
+import { useDeleteFile, useFiles } from "@/hooks/useFiles";
 import { useMemo, useState } from "react";
 import { formatFileSize } from "@/utils/formatFileSize";
-import { PdfFile } from "@/types/file";
+import { FileObject } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
 
-type SortKey = "name" | "size" | "lastModified";
+type SortKey = "name" | "metadata.size" | "last_accessed_at";
 
 interface SortIconProps {
   columnKey: SortKey;
@@ -57,12 +57,14 @@ const SortIcon: React.FC<SortIconProps> = ({
 
 export default function PdfExplorer(): JSX.Element {
   const files = useFiles();
-  const [selectedFile, setSelectedFile] = useState<PdfFile | null>(null);
+  const deleteFile = useDeleteFile();
+  const [selectedFile, setSelectedFile] = useState<FileObject | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [renamingFile, setRenamingFile] = useState<PdfFile | null>(null);
+  const [renamingFile, setRenamingFile] = useState<FileObject | null>(null);
   const [newFileName, setNewFileName] = useState<string>("");
 
+  // FIXME: Sorting for sizes does not work
   const sortedFiles = useMemo(() => {
     if (!files.data) return [];
     return [...files.data].sort((a, b) => {
@@ -88,11 +90,11 @@ export default function PdfExplorer(): JSX.Element {
 
   const handleDelete = (id: string): void => {
     console.log(`Deleting file with id: ${id}`);
-    console.log("Implement delete functionality here");
+    deleteFile.mutate(id);
   };
 
   const handleRename = (id: string): void => {
-    const fileToRename = files.data.find((file: PdfFile) => file.id === id);
+    const fileToRename = files.data.find((file: FileObject) => file.id === id);
     if (fileToRename) {
       setRenamingFile(fileToRename);
       setNewFileName(fileToRename.name);
@@ -101,7 +103,7 @@ export default function PdfExplorer(): JSX.Element {
 
   const confirmRename = (): void => {
     if (newFileName.trim() !== "" && renamingFile) {
-      files.data.map((file: PdfFile) =>
+      files.data.map((file: FileObject) =>
         file.id === renamingFile.id
           ? { ...file, name: newFileName.trim() }
           : file
@@ -111,14 +113,14 @@ export default function PdfExplorer(): JSX.Element {
     }
   };
 
-  const handleDownload = (file: PdfFile): void => {
+  const handleDownload = (file: FileObject): void => {
     console.log(`Downloading file: ${file.name}`);
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">PDF File Explorer</h1>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="bg-white border  rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,12 +139,12 @@ export default function PdfExplorer(): JSX.Element {
               </TableHead>
               <TableHead
                 className="w-[15%] cursor-pointer"
-                onClick={() => handleSort("size")}
+                onClick={() => handleSort("metadata.size")}
               >
                 <div className="flex items-center">
                   Size
                   <SortIcon
-                    columnKey="size"
+                    columnKey="metadata.size"
                     currentSortKey={sortKey}
                     currentSortOrder={sortOrder}
                   />
@@ -150,12 +152,12 @@ export default function PdfExplorer(): JSX.Element {
               </TableHead>
               <TableHead
                 className="w-[20%] cursor-pointer"
-                onClick={() => handleSort("lastModified")}
+                onClick={() => handleSort("last_accessed_at")}
               >
                 <div className="flex items-center">
                   Last Modified
                   <SortIcon
-                    columnKey="lastModified"
+                    columnKey="last_accessed_at"
                     currentSortKey={sortKey}
                     currentSortOrder={sortOrder}
                   />
@@ -165,7 +167,7 @@ export default function PdfExplorer(): JSX.Element {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedFiles.map((file: PdfFile) => (
+            {sortedFiles.map((file: FileObject) => (
               <TableRow key={file.id} className="hover:bg-gray-100">
                 <TableCell
                   className="font-medium cursor-pointer"
@@ -204,7 +206,7 @@ export default function PdfExplorer(): JSX.Element {
                       <DropdownMenuItem onClick={() => handleRename(file.id)}>
                         Rename
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(file.id)}>
+                      <DropdownMenuItem onClick={() => handleDelete(file.name)}>
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

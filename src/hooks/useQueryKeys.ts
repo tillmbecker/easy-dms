@@ -7,7 +7,7 @@ export const queryKeys = {
   },
   files: {
     all: ["files"] as const,
-    id: (fileId: string) => ["files", "id", fileId] as const,
+    name: (fileName: string) => ["files", "name", fileName] as const,
   },
   posts: {
     all: ["posts"] as const,

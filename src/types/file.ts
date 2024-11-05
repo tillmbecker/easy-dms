@@ -1,3 +1,3 @@
-import { FileObject as PdfFile } from "@supabase/storage-js";
+import { FileObject } from "@supabase/storage-js";
 
-export type { PdfFile };
+export type { FileObject };
