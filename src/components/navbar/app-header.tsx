@@ -12,6 +12,7 @@ import {
 import { Separator } from "../ui/separator";
 import { SidebarTrigger } from "../ui/sidebar";
 import React from "react";
+import Link from "next/link";
 
 export default function () {
   const pathname = usePathname();
@@ -36,8 +37,10 @@ export default function () {
                         {segment.charAt(0).toUpperCase() + segment.slice(1)}
                       </BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink href={href}>
-                        {segment.charAt(0).toUpperCase() + segment.slice(1)}
+                      <BreadcrumbLink asChild>
+                        <Link href={href}>
+                          {segment.charAt(0).toUpperCase() + segment.slice(1)}
+                        </Link>
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>

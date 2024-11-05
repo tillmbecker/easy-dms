@@ -1,5 +1,6 @@
 import { TutorialStep } from "./tutorial-step";
 import { CodeBlock } from "./code-block";
+import Link from "next/link";
 
 const create = `create table notes (
   id bigserial primary key,
@@ -50,25 +51,24 @@ export default function FetchDataSteps() {
       <TutorialStep title="Create some tables and insert some data">
         <p>
           Head over to the{" "}
-          <a
+          <Link
             href="https://supabase.com/dashboard/project/_/editor"
             className="font-bold hover:underline text-foreground/80"
             target="_blank"
             rel="noreferrer"
           >
             Table Editor
-          </a>{" "}
+          </Link>{" "}
           for your Supabase project to create a table and insert some example
           data. If you're stuck for creativity, you can copy and paste the
           following into the{" "}
-          <a
+          <link
             href="https://supabase.com/dashboard/project/_/sql/new"
             className="font-bold hover:underline text-foreground/80"
-            target="_blank"
             rel="noreferrer"
           >
             SQL Editor
-          </a>{" "}
+          </link>{" "}
           and click RUN!
         </p>
         <CodeBlock code={create} />
