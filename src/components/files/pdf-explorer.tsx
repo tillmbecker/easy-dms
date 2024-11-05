@@ -28,22 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { useFiles, useFileUrl } from "@/hooks/useFiles";
+import { useFiles } from "@/hooks/useFiles";
 import { useMemo, useState } from "react";
 import { formatFileSize } from "@/utils/formatFileSize";
 import { PdfFile } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
 
-type SortKey = "name" | "size" | "lastModified" | "client";
-
-// Simulated client list
-const initialClients: string[] = [
-  "Client A",
-  "Client B",
-  "Client C",
-  "Client D",
-  "Client E",
-];
+type SortKey = "name" | "size" | "lastModified";
 
 interface SortIconProps {
   columnKey: SortKey;
@@ -66,13 +57,11 @@ const SortIcon: React.FC<SortIconProps> = ({
 
 export default function PdfExplorer(): JSX.Element {
   const files = useFiles();
-  const [clients, setClients] = useState<string[]>(initialClients);
   const [selectedFile, setSelectedFile] = useState<PdfFile | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [renamingFile, setRenamingFile] = useState<PdfFile | null>(null);
   const [newFileName, setNewFileName] = useState<string>("");
-  const fileUrl = useFileUrl(selectedFile?.name ?? "");
 
   const sortedFiles = useMemo(() => {
     if (!files.data) return [];

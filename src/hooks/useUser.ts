@@ -23,6 +23,7 @@ export function useUser() {
     },
   });
 }
+
 export function useSignOutUser() {
   const queryClient = useQueryClient();
   const router = useRouter();
