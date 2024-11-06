@@ -11,7 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { FileObject } from "@/types/file";
-import { useDeleteFile, useRenameFile } from "@/hooks/useFiles";
+import {
+  useDeleteFile,
+  useFileDownloader,
+  useRenameFile,
+} from "@/hooks/useFiles";
 import { useState } from "react";
 import ConfirmationDialog from "./confirmation-dialog";
 import { DialogFooter } from "../ui/dialog";
@@ -34,6 +38,7 @@ interface ConfirmationState {
 export default function FileRow({ file, setSelectedFile }: FileRowProps) {
   const deleteFile = useDeleteFile();
   const renameFile = useRenameFile();
+  const { downloadFile } = useFileDownloader(file.name);
   const isLoading = renameFile.isPending || deleteFile.isPending;
   const [newFileName, setNewFileName] = useState<string>("");
 
@@ -95,6 +100,10 @@ export default function FileRow({ file, setSelectedFile }: FileRowProps) {
     }
   };
 
+  const handleDownloadClick = async () => {
+    await downloadFile();
+  };
+
   /**
    * Updates the selected file if the application is not currently loading.
    *
@@ -140,7 +149,7 @@ export default function FileRow({ file, setSelectedFile }: FileRowProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => {}}>
+              <DropdownMenuItem onClick={() => handleDownloadClick()}>
                 <Download className="mr-2 h-4 w-4" />
                 Download
               </DropdownMenuItem>

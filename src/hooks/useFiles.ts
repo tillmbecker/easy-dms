@@ -38,6 +38,49 @@ export function useFileUrl(fileName: string) {
   });
 }
 
+export function useFileDownloader(fileName: string) {
+  const downloadFile = async () => {
+    try {
+      const response = await fetch(`/api/files/${fileName}/download`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      // Get content type from response headers
+      const contentType =
+        response.headers.get("content-type") || "application/octet-stream";
+
+      // Get the blob with proper content type
+      const blob = await response.blob();
+      const fileBlob = new Blob([blob], { type: contentType });
+
+      // Create URL and link
+      const url = window.URL.createObjectURL(fileBlob);
+      const link = document.createElement("a");
+      link.style.display = "none";
+      link.href = url;
+      link.download = fileName;
+
+      // Handle download
+      document.body.appendChild(link);
+      link.click();
+
+      // Wait a moment before cleanup to ensure download starts
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return true;
+    } catch (error) {
+      throw handleError(error);
+    }
+  };
+
+  return { downloadFile };
+}
+
 type DeleteFileResponse = ApiResponse<FileObject[] | null>;
 
 export function useDeleteFile() {
