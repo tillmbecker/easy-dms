@@ -33,6 +33,7 @@ import { useMemo, useState } from "react";
 import { formatFileSize } from "@/utils/formatFileSize";
 import { FileObject } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
+import ConfirmationDialog from "./confirmation-dialog";
 
 type SortKey = "name" | "metadata.size" | "last_accessed_at";
 
@@ -55,6 +56,13 @@ const SortIcon: React.FC<SortIconProps> = ({
   );
 };
 
+// Type for tracking confirmation state
+interface ConfirmationState {
+  open: boolean;
+  file: FileObject | null;
+  action: "delete" | "rename" | null;
+}
+
 export default function PdfExplorer(): JSX.Element {
   const files = useFiles();
   const deleteFile = useDeleteFile();
@@ -63,6 +71,35 @@ export default function PdfExplorer(): JSX.Element {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [renamingFile, setRenamingFile] = useState<FileObject | null>(null);
   const [newFileName, setNewFileName] = useState<string>("");
+  // State for tracking which file is being acted upon
+  const [confirmationState, setConfirmationState] = useState<ConfirmationState>(
+    {
+      open: false,
+      file: null,
+      action: null,
+    }
+  );
+  const handleDeleteClick = (file: FileObject) => {
+    setConfirmationState({
+      open: true,
+      file,
+      action: "delete",
+    });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (confirmationState.file) {
+      await deleteFile.mutate(confirmationState.file.name);
+
+      // // Reset confirmation state after deletion
+      console.log("File deleted successfully");
+      setConfirmationState({
+        open: false,
+        file: null,
+        action: null,
+      });
+    }
+  };
 
   // FIXME: Sorting for sizes does not work
   const sortedFiles = useMemo(() => {
@@ -88,11 +125,6 @@ export default function PdfExplorer(): JSX.Element {
     }
   };
 
-  const handleDelete = (id: string): void => {
-    console.log(`Deleting file with id: ${id}`);
-    deleteFile.mutate(id);
-  };
-
   const handleRename = (id: string): void => {
     const fileToRename = files.data.find((file: FileObject) => file.id === id);
     if (fileToRename) {
@@ -114,6 +146,8 @@ export default function PdfExplorer(): JSX.Element {
   };
 
   const handleDownload = (file: FileObject): void => {
+    // setActionConfirmationOpen(true);
+
     console.log(`Downloading file: ${file.name}`);
   };
 
@@ -191,7 +225,7 @@ export default function PdfExplorer(): JSX.Element {
                   {file.last_accessed_at}
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
+                  <DropdownMenu modal>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">
                         <span className="sr-only">Open menu</span>
@@ -199,14 +233,18 @@ export default function PdfExplorer(): JSX.Element {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleDownload(file)}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          handleDownload(file);
+                        }}
+                      >
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleRename(file.id)}>
                         Rename
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDelete(file.name)}>
+                      <DropdownMenuItem onClick={() => handleDeleteClick(file)}>
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -225,6 +263,21 @@ export default function PdfExplorer(): JSX.Element {
           onOpenChange={(open) => !open && setSelectedFile(null)}
         />
       )}
+
+      <ConfirmationDialog
+        open={confirmationState.open}
+        onOpenChange={(open) =>
+          setConfirmationState((prev) => ({ ...prev, open }))
+        }
+        title="Delete file"
+        variant="destructive"
+        description={
+          confirmationState.file
+            ? `Are you sure you want to delete "${confirmationState.file.name}"? This action cannot be undone.`
+            : "Are you sure you want to delete this file? This action cannot be undone."
+        }
+        onConfirm={handleDeleteConfirm}
+      />
 
       {renamingFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
