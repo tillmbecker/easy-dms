@@ -16,6 +16,7 @@ import { FileObject } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
 import FileRow from "./file-row";
 import PdfExplorerSkeleton from "./pdf-explorer-skeleton";
+import PdfExplorerEmpty from "./pdf-explorer-empty";
 
 type SortKey = "name" | "metadata.size" | "last_accessed_at";
 
@@ -120,9 +121,8 @@ export default function PdfExplorer(): JSX.Element {
                 <TableHead className="w-[5%] ">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            {files.isLoading ? (
-              <PdfExplorerSkeleton />
-            ) : (
+            {files.isLoading && <PdfExplorerSkeleton />}
+            {files.isSuccess && files.data && files.data.length > 0 && (
               <TableBody>
                 {sortedFiles.map((file: FileObject) => (
                   <FileRow
@@ -132,6 +132,9 @@ export default function PdfExplorer(): JSX.Element {
                   />
                 ))}
               </TableBody>
+            )}
+            {files.isSuccess && files.data && files.data.length === 0 && (
+              <PdfExplorerEmpty />
             )}
           </Table>
         )}
