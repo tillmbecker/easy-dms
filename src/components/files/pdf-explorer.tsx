@@ -60,6 +60,7 @@ export default function PdfExplorer(): JSX.Element {
     });
   }, [files.data, sortKey, sortOrder]);
 
+  console.log(files.data);
   const handleSort = (key: SortKey): void => {
     if (sortKey === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");

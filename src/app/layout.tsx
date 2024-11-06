@@ -3,6 +3,8 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { TanstackProvider } from "@/providers/TanstackProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { PostHogProvider } from "@/providers/post-hog-provider";
+import PostHogPageView from "@/lib/posthog/post-hog-page-view";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -21,19 +23,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
-        <TanstackProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </TanstackProvider>
-      </body>
+      <PostHogProvider>
+        <body className="bg-background text-foreground">
+          <TanstackProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <PostHogPageView />
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </TanstackProvider>
+        </body>
+      </PostHogProvider>
     </html>
   );
 }
