@@ -3,13 +3,13 @@
 import * as React from "react";
 import {
   File,
-  X,
   ChevronUp,
   ChevronDown,
   MoreVertical,
   Download,
-  Check,
-  ChevronsUpDown,
+  Loader2,
+  Trash,
+  Pencil,
 } from "lucide-react";
 import {
   Table,
@@ -28,12 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { useDeleteFile, useFiles } from "@/hooks/useFiles";
+import { useDeleteFile, useFiles, useRenameFile } from "@/hooks/useFiles";
 import { useMemo, useState } from "react";
 import { formatFileSize } from "@/utils/formatFileSize";
 import { FileObject } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
 import ConfirmationDialog from "./confirmation-dialog";
+import { DialogFooter } from "../ui/dialog";
 
 type SortKey = "name" | "metadata.size" | "last_accessed_at";
 
@@ -66,6 +67,7 @@ interface ConfirmationState {
 export default function PdfExplorer(): JSX.Element {
   const files = useFiles();
   const deleteFile = useDeleteFile();
+  const renameFile = useRenameFile();
   const [selectedFile, setSelectedFile] = useState<FileObject | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -92,7 +94,6 @@ export default function PdfExplorer(): JSX.Element {
       await deleteFile.mutate(confirmationState.file.name);
 
       // // Reset confirmation state after deletion
-      console.log("File deleted successfully");
       setConfirmationState({
         open: false,
         file: null,
@@ -101,6 +102,31 @@ export default function PdfExplorer(): JSX.Element {
     }
   };
 
+  const handleRenameClick = (file: FileObject) => {
+    setNewFileName(file.name);
+    setConfirmationState({
+      open: true,
+      file,
+      action: "rename",
+    });
+  };
+
+  const handleRenameConfirm = async () => {
+    if (!confirmationState.file) return;
+    if (newFileName.trim() !== "" && confirmationState.file) {
+      // Rename file
+      await renameFile.mutate({
+        fileName: confirmationState.file.name,
+        newFileName,
+      });
+      setConfirmationState({
+        open: false,
+        file: null,
+        action: null,
+      });
+      setNewFileName("");
+    }
+  };
   // FIXME: Sorting for sizes does not work
   const sortedFiles = useMemo(() => {
     if (!files.data) return [];
@@ -122,26 +148,6 @@ export default function PdfExplorer(): JSX.Element {
     } else {
       setSortKey(key);
       setSortOrder("asc");
-    }
-  };
-
-  const handleRename = (id: string): void => {
-    const fileToRename = files.data.find((file: FileObject) => file.id === id);
-    if (fileToRename) {
-      setRenamingFile(fileToRename);
-      setNewFileName(fileToRename.name);
-    }
-  };
-
-  const confirmRename = (): void => {
-    if (newFileName.trim() !== "" && renamingFile) {
-      files.data.map((file: FileObject) =>
-        file.id === renamingFile.id
-          ? { ...file, name: newFileName.trim() }
-          : file
-      );
-      setRenamingFile(null);
-      setNewFileName("");
     }
   };
 
@@ -241,10 +247,12 @@ export default function PdfExplorer(): JSX.Element {
                         <Download className="mr-2 h-4 w-4" />
                         Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRename(file.id)}>
+                      <DropdownMenuItem onClick={() => handleRenameClick(file)}>
+                        <Pencil className="mr-2 h-4 w-4" />
                         Rename
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDeleteClick(file)}>
+                        <Trash className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -256,16 +264,13 @@ export default function PdfExplorer(): JSX.Element {
         </Table>
       </div>
 
-      {selectedFile && (
-        <PdfViewer
-          file={selectedFile}
-          open={selectedFile !== null}
-          onOpenChange={(open) => !open && setSelectedFile(null)}
-        />
-      )}
-
+      <PdfViewer
+        file={selectedFile}
+        open={selectedFile !== null}
+        onOpenChange={(open) => !open && setSelectedFile(null)}
+      />
       <ConfirmationDialog
-        open={confirmationState.open}
+        open={confirmationState.open && confirmationState.action === "delete"}
         onOpenChange={(open) =>
           setConfirmationState((prev) => ({ ...prev, open }))
         }
@@ -277,29 +282,46 @@ export default function PdfExplorer(): JSX.Element {
             : "Are you sure you want to delete this file? This action cannot be undone."
         }
         onConfirm={handleDeleteConfirm}
+        renderActions={({ onConfirm, onCancel, isLoading }) => (
+          <DialogFooter>
+            <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onConfirm}
+              disabled={isLoading}
+              className="flex items-center space-x-2"
+            >
+              <span>Delete File</span>
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash className="w-4 h-4" />
+              )}
+            </Button>
+          </DialogFooter>
+        )}
       />
 
-      {renamingFile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-96">
-            <h2 className="text-xl font-semibold mb-4">Rename File</h2>
+      <ConfirmationDialog
+        open={confirmationState.open && confirmationState.action === "rename"}
+        onOpenChange={(open) =>
+          setConfirmationState((prev) => ({ ...prev, open }))
+        }
+        title="Rename File"
+        onConfirm={handleRenameConfirm}
+        renderContent={() => (
+          <div className="py-4">
             <Input
               type="text"
               value={newFileName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setNewFileName(e.target.value)
-              }
-              className="mb-4"
+              onChange={(e) => setNewFileName(e.target.value)}
+              placeholder="Enter new file name"
             />
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setRenamingFile(null)}>
-                Cancel
-              </Button>
-              <Button onClick={confirmRename}>Rename</Button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+      />
     </div>
   );
 }

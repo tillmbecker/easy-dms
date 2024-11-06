@@ -1,7 +1,7 @@
 import { handleError, showSuccess } from "@/utils/error-handling";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./useQueryKeys";
-import { deleteFile } from "@/actions/file";
+import { deleteFile, renameFile } from "@/actions/file";
 import { FileObject } from "@/types/file";
 
 export function useFiles() {
@@ -45,11 +45,10 @@ export function useDeleteFile() {
 
   return useMutation({
     mutationFn: async (fileName: string): Promise<DeleteFileResponse> => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.files.all });
+
       const response = await deleteFile(fileName);
 
-      const previousData = queryClient.getQueryData<FileObject[]>([
-        queryKeys.files.all,
-      ]);
       queryClient.setQueryData<FileObject[] | null>(
         queryKeys.files.all,
         (old) => old?.filter((file) => file.name !== fileName)
@@ -64,7 +63,7 @@ export function useDeleteFile() {
     onError: (error: Error) => {
       handleError(error);
     },
-    onSettled: (response) => {
+    onSettled: () => {
       // Invalidate queries regardless of success/failure
       queryClient.invalidateQueries({
         queryKey: queryKeys.files.all,
@@ -74,6 +73,44 @@ export function useDeleteFile() {
       if (response?.data?.[0].name) {
         showSuccess.deleted("File");
       }
+    },
+  });
+}
+
+type RenameFileResponse = ApiResponse<FileObject[] | null>;
+export function useRenameFile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      fileName,
+      newFileName,
+    }: {
+      fileName: string;
+      newFileName: string;
+    }): Promise<RenameFileResponse> => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.files.all });
+
+      const response = await renameFile(fileName, newFileName);
+
+      // Throw error to trigger onError if not successful
+      if (!response.success) {
+        throw new Error(response.error || "Failed to delete file");
+      }
+
+      return response;
+    },
+    onError: (error: Error) => {
+      handleError(error);
+    },
+    onSettled: () => {
+      // Invalidate queries regardless of success/failure
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.files.all,
+      });
+    },
+    onSuccess: () => {
+      showSuccess.updated("File");
     },
   });
 }

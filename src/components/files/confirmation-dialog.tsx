@@ -21,10 +21,24 @@ interface ConfirmationDialogProps {
   title: string;
   description?: string;
 
+  // Custom content options
+  children?: React.ReactNode;
+  renderContent?: () => React.ReactNode;
+
   // Action configuration
   confirmText?: string;
   cancelText?: string;
   variant?: "default" | "destructive";
+
+  // Custom action buttons
+  renderActions?: (props: {
+    confirmText: string;
+    cancelText: string;
+    variant: string;
+    isLoading: boolean;
+    onConfirm: () => void;
+    onCancel: () => void;
+  }) => React.ReactNode;
 
   // Callback functions
   onConfirm: () => void | Promise<void>;
@@ -39,9 +53,13 @@ export default function ConfirmationDialog({
   onOpenChange,
   title,
   description,
+  children,
+  renderContent,
+
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "default",
+  renderActions,
   onConfirm,
   onCancel,
   isLoading = false,
@@ -56,6 +74,30 @@ export default function ConfirmationDialog({
     onOpenChange(false);
   };
 
+  const defaultActions = (
+    <DialogFooter>
+      <DialogClose asChild>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleCancel}
+          disabled={isLoading}
+        >
+          {cancelText}
+        </Button>
+      </DialogClose>
+
+      <Button
+        type="button"
+        variant={variant as any}
+        onClick={handleConfirm}
+        disabled={isLoading}
+      >
+        {isLoading ? "Loading..." : confirmText}
+      </Button>
+    </DialogFooter>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="[&>button]:hidden">
@@ -63,26 +105,22 @@ export default function ConfirmationDialog({
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isLoading}
-            >
-              {cancelText}
-            </Button>
-          </DialogClose>
 
-          <Button
-            variant={variant}
-            onClick={handleConfirm}
-            disabled={isLoading}
-          >
-            {isLoading ? "Loading..." : confirmText}
-          </Button>
-        </DialogFooter>
+        {/* Custom content area */}
+        {renderContent?.()}
+        {children}
+
+        {/* Action buttons */}
+        {renderActions
+          ? renderActions({
+              confirmText,
+              cancelText,
+              variant,
+              isLoading,
+              onConfirm: handleConfirm,
+              onCancel: handleCancel,
+            })
+          : defaultActions}
       </DialogContent>
     </Dialog>
   );
