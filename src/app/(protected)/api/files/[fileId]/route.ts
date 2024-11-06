@@ -13,7 +13,6 @@ export async function GET(
       .from("files")
       .createSignedUrl(`${user?.id}/${params.fileId}`, 3600);
 
-    console.log(data);
     if (error) {
       console.error("Error creating signed file url:", error);
       return new Response(

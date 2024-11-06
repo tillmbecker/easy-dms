@@ -6,6 +6,11 @@
  * @param decimalPlaces - Number of decimal places to show (default: 1)
  * @param useComma - Use comma instead of dot for decimal separator (default: true)
  * @returns Formatted string (e.g., "2,5 MB" or "0,5 GB")
+ * @example
+ * formatFileSize(1024) // "1 KB"
+ * formatFileSize(1024 * 1024) // "1 MB"
+ * formatFileSize(1024 * 1024 * 1024) // "1 GB"
+ * formatFileSize(1024 * 1024 * 1024 * 1024) // "1 TB"
  */
 export function formatFileSize(
   bytes: number,
@@ -45,13 +50,3 @@ export function formatFileSize(
 
   return `${formattedValue} ${units[safeUnitIndex]}`;
 }
-
-// Example usage:
-/*
-console.log(formatFileSize(500));          // "500 B"
-console.log(formatFileSize(1024));         // "1,0 KB"
-console.log(formatFileSize(1536));         // "1,5 KB"
-console.log(formatFileSize(1048576));      // "1,0 MB"
-console.log(formatFileSize(1073741824));   // "1,0 GB"
-console.log(formatFileSize(2147483648));   // "2,0 GB"
-*/

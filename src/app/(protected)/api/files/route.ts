@@ -14,7 +14,6 @@ export async function GET(request: Request) {
         offset: 0,
       });
 
-    console.log(data);
     if (error) {
       console.error("Error getting files:", error);
       return new Response(JSON.stringify({ error: "Error getting files" }), {
