@@ -15,10 +15,14 @@ export default function UploadFile() {
       "image/*": [".png", ".jpg", ".jpeg"],
     },
     maxFiles: 1,
-    onDrop: async (acceptedFiles) => {
+    onDrop: async (acceptedFiles, rejectedFiles) => {
       setLoading(true);
       setError(null);
-
+      if (rejectedFiles.length > 0) {
+        setError("Please upload only PDF or image files (PNG, JPG, JPEG)");
+        setLoading(false);
+        return;
+      }
       try {
         const formData = new FormData();
         formData.append("file", acceptedFiles[0]);
