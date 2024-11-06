@@ -5,6 +5,7 @@ import { TanstackProvider } from "@/providers/TanstackProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "@/providers/post-hog-provider";
 import PostHogPageView from "@/lib/posthog/post-hog-page-view";
+import CookieBanner from "@/components/cookies/cookie-banner";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -34,6 +35,7 @@ export default function RootLayout({
             >
               <PostHogPageView />
               {children}
+              <CookieBanner />
               <Toaster />
             </ThemeProvider>
           </TanstackProvider>
