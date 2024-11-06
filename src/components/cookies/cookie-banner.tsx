@@ -90,8 +90,8 @@ export default function CookieBanner() {
           <div className="flex-grow">
             <h2 className="text-sm font-medium mb-2">Cookie preferences</h2>
             <p className="text-xs text-muted-foreground mb-3">
-              Hi there! We use cookies to make our site work and to understand
-              how you use it.
+              We use cookies to enhance your browsing experience and analyze our
+              traffic.
             </p>
             <div className="flex gap-2">
               <Button onClick={acceptAll} size="sm" className="text-xs">
@@ -123,6 +123,7 @@ export default function CookieBanner() {
         isOpen={isModalOpen}
         onClose={closePreferences}
         onSave={savePreferences}
+        initialPreferences={preferences}
       />
     </>
   );
