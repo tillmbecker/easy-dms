@@ -3,9 +3,13 @@ import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PostHogClient from "@/lib/posthog/posthog";
 import Link from "next/link";
 
 export default async function Login(props: { searchParams: Promise<Message> }) {
+  const posthog = PostHogClient();
+  await posthog.shutdown();
+
   const searchParams = await props.searchParams;
   return (
     <form className="flex-1 flex flex-col min-w-64">

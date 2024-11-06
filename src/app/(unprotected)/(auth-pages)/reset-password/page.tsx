@@ -3,10 +3,14 @@ import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PostHogClient from "@/lib/posthog/posthog";
 
 export default async function ResetPassword(props: {
   searchParams: Promise<Message>;
 }) {
+  const posthog = PostHogClient();
+  await posthog.shutdown();
+
   const searchParams = await props.searchParams;
   return (
     <form className="flex flex-col w-full max-w-md p-4 gap-2 [&>input]:mb-4">

@@ -3,11 +3,15 @@ import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import PostHogClient from "@/lib/posthog/posthog";
 import Link from "next/link";
 
 export default async function Signup(props: {
   searchParams: Promise<Message>;
 }) {
+  const posthog = PostHogClient();
+  await posthog.shutdown();
+
   const searchParams = await props.searchParams;
   if ("message" in searchParams) {
     return (
