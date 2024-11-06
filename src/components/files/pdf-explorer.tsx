@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import { FileObject } from "@/types/file";
 import PdfViewer from "./pdf-viewer";
 import FileRow from "./file-row";
+import PdfExplorerSkeleton from "./pdf-explorer-skeleton";
 
 type SortKey = "name" | "metadata.size" | "last_accessed_at";
 
@@ -71,61 +72,69 @@ export default function PdfExplorer(): JSX.Element {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">PDF File Explorer</h1>
       <div className="bg-white border  rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead
-                className="w-[30%] cursor-pointer"
-                onClick={() => handleSort("name")}
-              >
-                <div className="flex items-center">
-                  File Name
-                  <SortIcon
-                    columnKey="name"
-                    currentSortKey={sortKey}
-                    currentSortOrder={sortOrder}
+        {false ? (
+          <PdfExplorerSkeleton />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead
+                  className="w-[30%] cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center">
+                    File Name
+                    <SortIcon
+                      columnKey="name"
+                      currentSortKey={sortKey}
+                      currentSortOrder={sortOrder}
+                    />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="w-[15%] cursor-pointer"
+                  onClick={() => handleSort("metadata.size")}
+                >
+                  <div className="flex items-center">
+                    Size
+                    <SortIcon
+                      columnKey="metadata.size"
+                      currentSortKey={sortKey}
+                      currentSortOrder={sortOrder}
+                    />
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="w-[20%] cursor-pointer"
+                  onClick={() => handleSort("last_accessed_at")}
+                >
+                  <div className="flex items-center">
+                    Last Modified
+                    <SortIcon
+                      columnKey="last_accessed_at"
+                      currentSortKey={sortKey}
+                      currentSortOrder={sortOrder}
+                    />
+                  </div>
+                </TableHead>
+                <TableHead className="w-[5%] ">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            {files.isLoading ? (
+              <PdfExplorerSkeleton />
+            ) : (
+              <TableBody>
+                {sortedFiles.map((file: FileObject) => (
+                  <FileRow
+                    key={file.id}
+                    file={file}
+                    setSelectedFile={setSelectedFile}
                   />
-                </div>
-              </TableHead>
-              <TableHead
-                className="w-[15%] cursor-pointer"
-                onClick={() => handleSort("metadata.size")}
-              >
-                <div className="flex items-center">
-                  Size
-                  <SortIcon
-                    columnKey="metadata.size"
-                    currentSortKey={sortKey}
-                    currentSortOrder={sortOrder}
-                  />
-                </div>
-              </TableHead>
-              <TableHead
-                className="w-[20%] cursor-pointer"
-                onClick={() => handleSort("last_accessed_at")}
-              >
-                <div className="flex items-center">
-                  Last Modified
-                  <SortIcon
-                    columnKey="last_accessed_at"
-                    currentSortKey={sortKey}
-                    currentSortOrder={sortOrder}
-                  />
-                </div>
-              </TableHead>
-              <TableHead className="w-[5%] ">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedFiles.map((file: FileObject) => (
-              <FileRow
-                key={file.id}
-                file={file}
-                setSelectedFile={setSelectedFile}
-              />
-            ))}
-          </TableBody>
-        </Table>
+                ))}
+              </TableBody>
+            )}
+          </Table>
+        )}
       </div>
 
       <PdfViewer
