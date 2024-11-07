@@ -4,8 +4,15 @@ import "./globals.css";
 import { TanstackProvider } from "@/providers/TanstackProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "@/providers/post-hog-provider";
-import PostHogPageView from "@/lib/posthog/post-hog-page-view";
 import CookieBanner from "@/components/cookies/cookie-banner";
+import dynamic from "next/dynamic";
+
+const PostHogPageView = dynamic(
+  () => import("@/lib/posthog/post-hog-page-view"),
+  {
+    ssr: false,
+  }
+);
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
