@@ -5,8 +5,8 @@ export default async function UploadDocumentPage() {
   const posthog = PostHogClient();
   await posthog.shutdown();
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Invoice Processor</h1>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Upload document</h1>
 
       <UploadFile />
     </div>

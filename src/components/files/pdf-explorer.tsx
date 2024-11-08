@@ -71,8 +71,7 @@ export default function PdfExplorer(): JSX.Element {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">PDF File Explorer</h1>
+    <>
       <div className="bg-white border  rounded-lg overflow-hidden">
         {false ? (
           <PdfExplorerSkeleton />
@@ -140,12 +139,11 @@ export default function PdfExplorer(): JSX.Element {
           </Table>
         )}
       </div>
-
       <PdfViewer
         file={selectedFile}
         open={selectedFile !== null}
         onOpenChange={(open) => !open && setSelectedFile(null)}
       />
-    </div>
+    </>
   );
 }
