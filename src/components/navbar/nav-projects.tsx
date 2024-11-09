@@ -48,7 +48,9 @@ export function NavProjects({
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel className="flex items-center justify-between">
-        <span>Projects</span>
+        <Link href="/dashboard/projects" className="">
+          Projects
+        </Link>
 
         <TooltipProvider>
           <Tooltip>

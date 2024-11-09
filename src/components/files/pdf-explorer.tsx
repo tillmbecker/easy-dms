@@ -72,7 +72,7 @@ export default function PdfExplorer(): JSX.Element {
 
   return (
     <>
-      <div className="bg-white border  rounded-lg overflow-hidden">
+      <div className="bg-white border rounded-lg overflow-hidden">
         {false ? (
           <PdfExplorerSkeleton />
         ) : (
