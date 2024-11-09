@@ -3,11 +3,19 @@
 import { InvoiceData } from "@/types/invoice";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
+import LoadingSpinner from "../loading/loading-spinner";
+import { cn } from "@/utils/shadcn";
+import { Button } from "../ui/button";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function UploadFile() {
   const [result, setResult] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [appearLoader, setAppearLoader] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -70,6 +78,68 @@ export default function UploadFile() {
       {error && (
         <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>
       )}
+      <div className="border border-border rounded-md w-full p-4 mt-4 flex justify-between items-center ">
+        Here you will see your uploaded document
+        <div className="flex items-center">
+          <div
+            className={cn(
+              "transition-all duration-300 ease-in-out flex-shrink-0 flex items-center justify-center",
+              appearLoader ? "w-8 opacity-100" : "w-0 opacity-0"
+            )}
+          >
+            <LoadingSpinner className="h-4 w-4" />
+          </div>
+          <div
+            className={cn(
+              "transition-all duration-300 ease-in-out flex-shrink-0 flex items-center justify-center",
+              showSuccess ? "w-8 opacity-100" : "w-0 opacity-0"
+            )}
+          >
+            <CheckCircle className="h-5 w-5 stroke-green-700" />
+          </div>
+          <div
+            className={cn(
+              "transition-all duration-300 ease-in-out flex-shrink-0 flex items-center justify-center",
+              showError ? "w-8 opacity-100" : "w-0 opacity-0"
+            )}
+          >
+            <XCircle className="h-5 w-5 stroke-red-700" />
+          </div>
+        </div>
+      </div>
+      <Button
+        onClick={() =>
+          setAppearLoader((prev) => {
+            setShowSuccess(false);
+            setShowError(false);
+            return !prev;
+          })
+        }
+      >
+        Loading state
+      </Button>
+      <Button
+        onClick={() =>
+          setShowSuccess((prev) => {
+            setAppearLoader(false);
+            setShowError(false);
+            return !prev;
+          })
+        }
+      >
+        Success state
+      </Button>
+      <Button
+        onClick={() =>
+          setShowError((prev) => {
+            setAppearLoader(false);
+            setShowSuccess(false);
+            return !prev;
+          })
+        }
+      >
+        Error state
+      </Button>
 
       {result && (
         <div className="mt-8">
