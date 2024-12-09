@@ -3,6 +3,8 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { TanstackProvider } from "@/providers/TanstackProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+
 import { PostHogProvider } from "@/providers/post-hog-provider";
 import CookieBanner from "@/components/cookies/cookie-banner";
 import dynamic from "next/dynamic";
@@ -44,6 +46,7 @@ export default function RootLayout({
               {children}
               <CookieBanner />
               <Toaster />
+              <SonnerToaster closeButton richColors />
             </ThemeProvider>
           </TanstackProvider>
         </body>

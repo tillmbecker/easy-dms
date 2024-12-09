@@ -5,6 +5,7 @@ export const queryKeys = {
     notifications: (userId: string) =>
       ["user", "notifications", userId] as const,
   },
+  projects: { all: ["projects"] as const },
   files: {
     all: ["files"] as const,
     name: (fileName: string) => ["files", "name", fileName] as const,
