@@ -112,8 +112,15 @@ export async function POST(request: Request) {
 
     // console.log("Object:", object);
 
-    console.log("fileContent:", fileContent);
-
+    if (fileContent.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No content found in document" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
     const { object: classification } = await generateObject({
       model: openai("gpt-4o"),
       schema: z.object({
