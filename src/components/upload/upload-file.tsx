@@ -45,6 +45,8 @@ export default function UploadFile() {
         }
 
         const data = (await response.json()) as InvoiceData;
+        // Log uploaded file data to see response
+        console.log("data:", data);
         setResult(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -145,12 +147,7 @@ export default function UploadFile() {
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Extracted Information</h2>
           <div className="grid grid-cols-2 gap-4">
-            {(
-              Object.entries(result) as [
-                keyof InvoiceData,
-                InvoiceData[keyof InvoiceData],
-              ][]
-            ).map(([key, value]) => (
+            {(Object.entries(result) as any[]).map(([key, value]) => (
               <div key={key} className="border rounded p-4">
                 <p className="font-medium capitalize">
                   {key.replace(/([A-Z])/g, " $1").trim()}
