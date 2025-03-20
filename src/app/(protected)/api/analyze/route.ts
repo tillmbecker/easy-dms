@@ -177,28 +177,6 @@ export async function POST(request: Request) {
     });
     console.log("classification:", classification);
 
-    // const arrayBuffer = await file.arrayBuffer();
-    // const binaryFile = new Uint8Array(arrayBuffer);
-    // const result = await generateText({
-    //   model: anthropic("claude-3-5-sonnet-20241022"),
-    //   messages: [
-    //     {
-    //       role: "user",
-    //       content: JSON.stringify([
-    //         {
-    //           type: "text",
-    //           text: "What type of document is this file? Please classify it as CV, invoice or receipt.",
-    //         },
-    //         {
-    //           type: "file",
-    //           data: binaryFile,
-    //           mimeType: file.type,
-    //         },
-    //       ]),
-    //     },
-    //   ],
-    // });
-
     // const buffer = Buffer.from(await file.arrayBuffer());
 
     // const client = new DocumentAnalysisClient(
