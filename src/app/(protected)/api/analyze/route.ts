@@ -4,6 +4,14 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import {
+  AzureKeyCredential,
+  DocumentAnalysisClient,
+} from "@azure/ai-form-recognizer";
+import { InvoiceData } from "@/types/invoice";
+import { UploadError } from "@/components/upload/upload-file";
+
+import { StorageError } from "@supabase/storage-js";
 
 const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT || "";
 const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY || "";
@@ -13,14 +21,6 @@ export const maxDuration = 30;
 
 // Types
 type DocumentType = "CV" | "INVOICE" | "RECEIPT" | "UNKNOWN";
-
-enum PossibleClassifications {
-  CV = "CV",
-  INVOICE = "INVOICE",
-  RECEIPT = "RECEIPT",
-  UNKNOWN = "UNKNOWN",
-  ORDER = "ORDER",
-}
 
 interface ProcessedDocument {
   type: DocumentType;
@@ -62,7 +62,13 @@ export async function POST(request: Request) {
     // Validate file type
     if (!file.type.includes("pdf")) {
       return new Response(
-        JSON.stringify({ error: "Only PDF files are supported" }),
+        JSON.stringify({
+          error: {
+            error: "Only PDF files are supported",
+            statusCode: "500",
+            message: "",
+          },
+        }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -78,6 +84,19 @@ export async function POST(request: Request) {
     const docs = await loader.load();
     const fileContent = docs.map((doc) => doc.pageContent).join("\n");
 
+    // Check if document is empty
+    if (fileContent.length === 0) {
+      const error: UploadError = {
+        error: "NoContent",
+        statusCode: "400",
+        message: "",
+      };
+      return new Response(JSON.stringify({ error: error }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Upload file to Supabase storage
     const { data, error } = await supabase.storage
       .from("files")
@@ -87,95 +106,11 @@ export async function POST(request: Request) {
       });
 
     if (error) {
-      console.error("Error uploading file:", error);
-      return new Response(JSON.stringify({ error: "Failed to upload file" }), {
-        status: 500,
+      return new Response(JSON.stringify({ error }), {
+        status: Number((error as unknown as UploadError).statusCode),
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    const possibleClassifications = z.nativeEnum(PossibleClassifications);
-
-    // const { object } = await generateObject({
-    //   model: openai("gpt-4o"),
-    //   schema: z.object({
-    //     document: z.object({
-    //       classification: possibleClassifications,
-    //       summary: z.string().max(80),
-    //     }),
-    //   }),
-    //   prompt:
-    //     `You are given a text belonging to a document. Classify this document:` +
-    //     fileContent +
-    //     `Summarize the document in 80 characters or less.`,
-    // });
-
-    // console.log("Object:", object);
-
-    if (fileContent.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "No content found in document" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-    const { object: classification } = await generateObject({
-      model: openai("gpt-4o"),
-      schema: z.object({
-        document: z.object({
-          classification: possibleClassifications,
-          summary: z.string().max(80),
-          invoice: z
-            .object({
-              invoiceNumber: z.string(),
-              invoiceDate: z.string(),
-              dueDate: z.string(),
-              vendorName: z.string(),
-              vendorAddress: z.string(),
-              customerName: z.string(),
-              customerAddress: z.string(),
-              totalAmount: z.number(),
-              items: z.array(
-                z.object({
-                  name: z.string(),
-                  quantity: z.number(),
-                  unitPrice: z.number(),
-                  total: z.number(),
-                })
-              ),
-            })
-            .optional(),
-          cv: z
-            .object({
-              name: z.string(),
-              role: z.string(),
-              email: z.string(),
-              phone: z.string(),
-              address: z.string(),
-              education: z
-                .string()
-                .describe("Education history in school and university"),
-              experience: z.string().describe("Work experience"),
-              skills: z
-                .array(
-                  z.object({
-                    name: z.string().describe("Name of skill"),
-                    years: z.number().describe("Years of experience"),
-                  })
-                )
-                .describe("List of skills"),
-            })
-            .optional(),
-        }),
-      }),
-      prompt:
-        `You are given a content belonging to a document. The document is either an invoice or a CV. Return all requested information for the classified document type:` +
-        fileContent +
-        `You are forbidden to make up new information. Only return the information that is present in the document.`,
-    });
-    console.log("classification:", classification);
 
     // const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -206,34 +141,28 @@ export async function POST(request: Request) {
     // console.log("items", fields.items);
 
     // const extractedData: InvoiceData = {
-    //   invoiceNumber:
-    //     fields.InvoiceNumber?.content || fields.invoiceNumber?.content,
+    //   invoiceNumber: fields.InvoiceNumber?.content,
     //   invoiceDate: fields.InvoiceDate?.content
     //     ? new Date(fields.InvoiceDate.content)
-    //     : fields.invoiceDate?.content
-    //       ? new Date(fields.invoiceDate.content)
-    //       : undefined,
+    //     : undefined,
     //   dueDate: fields.DueDate?.content
     //     ? new Date(fields.DueDate.content)
-    //     : fields.dueDate?.content
-    //       ? new Date(fields.dueDate.content)
-    //       : undefined,
-    //   vendorName: fields.VendorName?.content || fields.vendorName?.content,
-    //   vendorAddress:
-    //     fields.VendorAddress?.content || fields.vendorAddress?.content,
-    //   customerName:
-    //     fields.CustomerName?.content || fields.customerName?.content,
-    //   customerAddress:
-    //     fields.CustomerAddress?.content || fields.customerAddress?.content,
-    //   totalAmount: parseFloat(
-    //     fields.TotalAmount?.content || fields.totalAmount?.content || "0"
-    //   ),
+    //     : undefined,
+    //   vendorName: fields.VendorName?.content,
+    //   vendorAddress: fields.VendorAddress?.content,
+    //   customerName: fields.CustomerName?.content,
+    //   customerAddress: fields.CustomerAddress?.content,
+    //   totalAmount: parseFloat(fields.TotalAmount?.content || "0"),
     // };
 
     // // Log the extracted data
     // console.log("Extracted Data:", extractedData);
 
-    return new Response(JSON.stringify({ classification }), {
+    // return new Response(JSON.stringify({ extractedData }), {
+    //   headers: { "Content-Type": "application/json" },
+    // });
+    console.log(error, data);
+    return new Response(JSON.stringify("Files uploaded"), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
