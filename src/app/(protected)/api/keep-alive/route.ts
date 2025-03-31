@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function POST() {
+export async function GET() {
   try {
     const supabase = await createClient();
     const {
@@ -17,7 +17,8 @@ export async function POST() {
     // Insert a dummy item
     const { data: insertData, error: insertError } = await supabase
       .from("keep_alive")
-      .insert({ content: 1 });
+      .insert({ content: 1 })
+      .select();
 
     if (insertError) throw insertError;
 
@@ -28,11 +29,12 @@ export async function POST() {
       const { data: deleteData, error: deleteError } = await supabase
         .from("keep_alive")
         .delete()
-        .eq("content", "1");
+        .eq("content", "1")
+        .select();
 
       if (deleteError) throw deleteError;
       console.log("Item deleted:", deleteData);
-    }, 2000);
+    }, 5000);
 
     return NextResponse.json({ message: "Job completed successfully" });
   } catch (error) {
