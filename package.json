@@ -7,7 +7,11 @@
     "gen-types": "npx supabase gen types --lang=typescript --project-id \"jkgkxctwzravdjhkpepq\" --schema public > database.types.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.0.2",
+    "@ai-sdk/openai": "^1.0.5",
     "@azure/ai-form-recognizer": "^5.0.0",
+    "@langchain/community": "^0.3.17",
+    "@langchain/core": "^0.3.22",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
@@ -15,6 +19,7 @@
     "@radix-ui/react-dropdown-menu": "^2.1.2",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-popover": "^1.1.2",
+    "@radix-ui/react-progress": "^1.1.2",
     "@radix-ui/react-scroll-area": "^1.2.0",
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-separator": "^1.1.0",
@@ -26,6 +31,7 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@tanstack/react-query": "^5.59.16",
+    "ai": "^4.0.9",
     "autoprefixer": "10.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -35,6 +41,7 @@
     "lucide-react": "^0.436.0",
     "next": "14.2",
     "next-themes": "^0.3.0",
+    "pdf-parse": "^1.1.1",
     "posthog-js": "^1.181.0",
     "posthog-node": "^4.2.1",
     "prettier": "^3.3.3",
@@ -43,12 +50,14 @@
     "react-dom": "18.2.0",
     "react-dropzone": "^14.3.2",
     "react-hook-form": "^7.53.2",
-    "sonner": "^1.7.0"
+    "sonner": "^1.7.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.59.7",
     "@tanstack/react-query-devtools": "^5.59.16",
     "@types/node": "20.10.6",
+    "@types/pdf-parse": "^1.1.4",
     "@types/react": "18.2.46",
     "@types/react-dom": "18.2.18",
     "postcss": "8.4.33",
