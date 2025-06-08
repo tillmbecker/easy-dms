@@ -1,24 +1,41 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createUserContextClient } from "@/lib/supabase/server";
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const serverCronSecret = process.env.CRON_SECRET;
     const authorizationHeader = request.headers.get("Authorization");
+    let supabase; // Declare supabase client variable
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     let isAuthorizedByCron = false;
     if (serverCronSecret && authorizationHeader) {
       const token = authorizationHeader.replace("Bearer ", "");
       if (token === serverCronSecret) {
         isAuthorizedByCron = true;
-        console.log("Authorized by Vercel Cron Job secret.");
       }
     }
 
-    const supabase = await createClient();
-
-    if (!isAuthorizedByCron) {
-      // Not authorized by cron secret, check for user authentication
+    if (isAuthorizedByCron) {
+      console.log(
+        "Authorized by Vercel Cron Job secret. Using service role key."
+      );
+      if (!supabaseUrl || !supabaseServiceKey) {
+        console.error(
+          "Supabase URL or Service Role Key is not configured for cron job."
+        );
+        return NextResponse.json(
+          { error: "Internal server error - service client misconfigured" },
+          { status: 500 }
+        );
+      }
+      supabase = createServiceRoleClient(supabaseUrl, supabaseServiceKey);
+    } else {
+      console.log("Not authorized by cron. Attempting user authentication.");
+      supabase = await createUserContextClient(); // Use the existing client for user auth
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -34,8 +51,16 @@ export async function GET(request: NextRequest) {
       }
       console.log("Authorized by user session.");
     }
-    // If isAuthorizedByCron is true, we proceed directly to the job logic.
-    // The supabase client is already initialized.
+
+    // Ensure supabase is initialized
+    if (!supabase) {
+      // This case should ideally not be reached if logic above is correct
+      console.error("Error: Supabase client failed to initialize.");
+      return NextResponse.json(
+        { error: "Internal server error - client initialization failed" },
+        { status: 500 }
+      );
+    }
 
     // Insert a dummy item
     const { data: insertData, error: insertError } = await supabase
