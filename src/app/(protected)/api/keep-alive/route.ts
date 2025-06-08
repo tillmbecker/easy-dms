@@ -24,17 +24,15 @@ export async function GET() {
 
     console.log("Item inserted:", insertData);
 
-    // Delete the dummy item after 2 seconds
-    setTimeout(async () => {
-      const { data: deleteData, error: deleteError } = await supabase
-        .from("keep_alive")
-        .delete()
-        .eq("content", "1")
-        .select();
+    // Delete the dummy item immediately
+    const { data: deleteData, error: deleteError } = await supabase
+      .from("keep_alive")
+      .delete()
+      .eq("content", 1)
+      .select();
 
-      if (deleteError) throw deleteError;
-      console.log("Item deleted:", deleteData);
-    }, 5000);
+    if (deleteError) throw deleteError;
+    console.log("Item deleted:", deleteData);
 
     return NextResponse.json({ message: "Job completed successfully" });
   } catch (error) {
